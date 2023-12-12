@@ -1,7 +1,12 @@
 <?php
 
-use Illuminate\Http\Request;
+use App\Http\Controllers\Api\V1\AttributeController;
+use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\CategoryController;
+use App\Http\Controllers\Api\V1\DepartmentController;
+use App\Http\Controllers\Api\V1\TouristPlaceController;
 use Illuminate\Support\Facades\Route;
+use Laravel\Sanctum\Http\Controllers\CsrfCookieController;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,6 +19,22 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+Route::group([
+    'prefix' => 'v1'
+], function () {
+
+    Route::post('login', [AuthController::class, 'login']);
+    Route::get('/sanctum/csrf-cookie', [CsrfCookieController::class, 'show']);
+
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::get('user', [AuthController::class, 'user']);
+        Route::post('logout', [AuthController::class, 'logout']);
+
+        Route::get('get_departments', [DepartmentController::class, 'getDepartments']);
+        Route::get('get_categories', [CategoryController::class, 'getCategory']);
+        Route::get('get_attribute', [AttributeController::class, 'getAttribute']);
+
+    });
+
+    Route::get('get_places', [TouristPlaceController::class, 'getPlace']);
 });
