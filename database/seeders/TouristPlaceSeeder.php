@@ -21,6 +21,7 @@ class TouristPlaceSeeder extends Seeder
                 'description' => 'Descripción del lugar turístico 1',
                 'lng' => -70.12345,
                 'lat' => -15.12345,
+                'user_id' => 1,
                 'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
                 'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
             ],
@@ -31,6 +32,7 @@ class TouristPlaceSeeder extends Seeder
                 'description' => 'Descripción del lugar turístico 2',
                 'lng' => -70.67890,
                 'lat' => -15.67890,
+                'user_id' => 1,
                 'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
                 'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
             ],
@@ -41,6 +43,7 @@ class TouristPlaceSeeder extends Seeder
                 'description' => 'Descripción del lugar turístico 3',
                 'lng' => -70.54321,
                 'lat' => -15.54321,
+                'user_id' => 1,
                 'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
                 'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
             ]

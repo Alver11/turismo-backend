@@ -16,8 +16,8 @@ class DatabaseSeeder extends Seeder
         $this->call(DistrictSeeder::class);
         $this->call(CategorySeeder::class);
         $this->call(AttributeSeeder::class);
-        $this->call(TouristPlaceSeeder::class);
         $this->call(PermissionSeeder::class);
+        $this->call(TouristPlaceSeeder::class);
 
         // \App\Models\User::factory(10)->create();
 
