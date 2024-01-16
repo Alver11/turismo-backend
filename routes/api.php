@@ -30,6 +30,8 @@ Route::group([
         Route::get('user', [AuthController::class, 'user']);
         Route::post('logout', [AuthController::class, 'logout']);
 
+        Route::resource('categories', CategoryController::class);
+
         Route::get('get_departments', [DepartmentController::class, 'getDepartments']);
         Route::get('get_categories', [CategoryController::class, 'getCategory']);
         Route::get('get_attribute', [AttributeController::class, 'getAttribute']);

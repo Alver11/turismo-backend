@@ -5,10 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 /**
  * @method static insert(array[] $data)
  * @method static get()
+ * @method static findOrFail($id)
  */
 class Category extends Model
 {
@@ -19,5 +21,21 @@ class Category extends Model
     public function touristPlaces(): BelongsToMany
     {
         return $this->belongsToMany(TouristPlace::class);
+    }
+
+    public function images(): MorphMany
+    {
+        return $this->morphMany(Image::class, 'imageable');
+    }
+
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::deleting(function ($category) {
+            foreach ($category->images as $image) {
+                $image->delete();
+            }
+        });
     }
 }
