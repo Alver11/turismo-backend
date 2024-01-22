@@ -77,7 +77,7 @@ class CategoryController extends Controller
         return response()->json(['message' => 'Categoría creada con éxito', 'category' => $category], 201);
     }
 
-    public function edit($id): Model|Collection|Builder|array|null
+    public function show($id): Model|Collection|Builder|array|null
     {
         return Category::with('images')->findOrFail($id);
     }

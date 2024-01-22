@@ -4,9 +4,12 @@ use App\Http\Controllers\Api\V1\AttributeController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\DepartmentController;
+use App\Http\Controllers\Api\V1\RoleController;
 use App\Http\Controllers\Api\V1\TouristPlaceController;
+use App\Http\Controllers\Api\V1\UserController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Sanctum\Http\Controllers\CsrfCookieController;
+use Laravel\Socialite\Facades\Socialite;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,11 +29,25 @@ Route::group([
     Route::post('login', [AuthController::class, 'login']);
     Route::get('/sanctum/csrf-cookie', [CsrfCookieController::class, 'show']);
 
+    Route::get('/google-auth/redirect', function () {
+        return Socialite::driver('google')->redirect();
+    });
+
+    Route::get('/google-auth/callback', function () {
+        $user = Socialite::driver('google')->user();
+
+        // $user->token
+    });
+
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('user', [AuthController::class, 'user']);
         Route::post('logout', [AuthController::class, 'logout']);
 
-        Route::resource('categories', CategoryController::class);
+        Route::apiResources([
+            'roles' => RoleController::class,
+            'users' => UserController::class,
+            'categories' => CategoryController::class,
+        ]);
 
         Route::get('get_departments', [DepartmentController::class, 'getDepartments']);
         Route::get('get_categories', [CategoryController::class, 'getCategory']);
