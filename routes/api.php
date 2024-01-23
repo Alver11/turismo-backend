@@ -42,6 +42,8 @@ Route::group([
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('user', [AuthController::class, 'user']);
         Route::post('logout', [AuthController::class, 'logout']);
+        Route::get('getRoles', [RoleController::class, 'getRoles']);
+        Route::get('permission', [RoleController::class, 'indexPermission']);
 
         Route::apiResources([
             'roles' => RoleController::class,

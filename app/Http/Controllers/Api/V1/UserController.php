@@ -11,6 +11,7 @@ use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -29,29 +30,27 @@ class UserController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $user = auth()->user();
         $queryUser =  User::query();
-        if ($user->hasRole('Super-Admin') || $user->roles()->whereHas('permissions', function ($query) {
-                $query->where('name', 'user list all');
-            })->exists()) {
-            return DataTables::eloquent($queryUser)
-                ->filter(function ($query) use ($request) {
-                    if ($request->has('search') && trim($request->input('search.value')) !== '') {
-                        $searchValue = $request->input('search.value');
-                        $query->where(function ($query) use ($searchValue) {
-                            $query->where('name', 'ilike', "%{$searchValue}%")
-                                ->orWhere('email', 'ilike', "%{$searchValue}%")
-                                ->orWhere('phone', 'ilike', "%{$searchValue}%");
-                        });
-                        $query->orWhereHas('roles', function ($query) use ($searchValue) {
-                            $query->where('name', 'ilike', "%{$searchValue}%");
-                        });
-                    }
-                })
-                ->make();
-        } else {
-            return DataTables::of([])->toJson();
-        }
+        $queryUser->whereHas('roles', function ($query) {
+            $query->where('guard_name', 'web');
+        });
+
+        return DataTables::eloquent($queryUser)
+            ->filter(function ($query) use ($request) {
+                if ($request->has('search') && trim($request->input('search.value')) !== '') {
+                    $searchValue = $request->input('search.value');
+                    $query->where(function ($query) use ($searchValue) {
+                        $query->where('name', 'ilike', "%{$searchValue}%")
+                            ->orWhere('email', 'ilike', "%{$searchValue}%")
+                            ->orWhere('phone', 'ilike', "%{$searchValue}%");
+                    });
+                    $query->orWhereHas('roles', function ($query) use ($searchValue) {
+                        $query->where('name', 'ilike', "%{$searchValue}%")
+                            ->where('guard_name', 'web');
+                    });
+                }
+            })
+            ->make();
     }
 
     public function store(Request $request): JsonResponse
@@ -152,9 +151,18 @@ class UserController extends Controller
 
     public function destroy(User $user): JsonResponse
     {
+        if (!$user) {
+            return response()->json(['error' => 'Usuario no encontrado'], 404);
+        }
+
         if ($user->id === 1) {
             return response()->json(['error' => 'No se puede eliminar el superadministrador'], 403);
         }
+
+        if ($user->id == Auth::id() ) {
+            return response()->json(['error' => 'No puedes eliminar tu propio usuario'], 403);
+        }
+
         DB::transaction(function () use ($user) {
             $user->roles()->detach();
             if($user->profile_path != null || $user->profile_path != ''){
@@ -165,5 +173,6 @@ class UserController extends Controller
 
         return response()->json(['message' => 'Usuario eliminado con éxito'], 200);
     }
+
 
 }
