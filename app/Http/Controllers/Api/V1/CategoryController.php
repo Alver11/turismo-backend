@@ -26,19 +26,9 @@ class CategoryController extends Controller
      */
     public function index(): JsonResponse
     {
-        $user = auth()->user();
         $category =  Category::query();
-
         $query = $category->with('images');
-
-        if ($user->hasRole('Super-Admin') || $user->roles()->whereHas('permissions', function ($query) {
-                $query->where('name', 'category list all');
-            })->exists()) {
-            return DataTables::of($query)->toJson();
-
-        } else {
-            return DataTables::of([])->toJson();
-        }
+        return DataTables::of($query)->toJson();
     }
 
     public function store(Request $request): JsonResponse
