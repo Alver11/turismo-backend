@@ -49,9 +49,11 @@ Route::group([
             'roles' => RoleController::class,
             'users' => UserController::class,
             'categories' => CategoryController::class,
+            'attributes' => AttributeController::class,
         ]);
 
         Route::get('get_departments', [DepartmentController::class, 'getDepartments']);
+        Route::get('districts', [DepartmentController::class, 'getDistricts']);
         Route::get('get_categories', [CategoryController::class, 'getCategory']);
         Route::get('get_attribute', [AttributeController::class, 'getAttribute']);
 
