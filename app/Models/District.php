@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * @method static insert(array[] $data)
+ * @method static where(string $string, int $int)
  */
 class District extends Model
 {
