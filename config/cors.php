@@ -19,7 +19,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['http://localhost:3000'],
+    'allowed_origins' => [env('CORS_DOMAIN')],
 
     'allowed_origins_patterns' => [],
 
