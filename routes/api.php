@@ -50,6 +50,7 @@ Route::group([
             'users' => UserController::class,
             'categories' => CategoryController::class,
             'attributes' => AttributeController::class,
+            'tourists' => TouristPlaceController::class,
         ]);
 
         Route::get('get_departments', [DepartmentController::class, 'getDepartments']);

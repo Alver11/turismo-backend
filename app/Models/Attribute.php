@@ -26,8 +26,7 @@ class Attribute extends Model
     public function touristPlaces(): BelongsToMany
     {
         return $this->belongsToMany(TouristPlace::class, 'attribute_tourist_place')
-            ->withPivot('info')
-            ->withTimestamps();
+            ->withPivot('info');
     }
 
 }

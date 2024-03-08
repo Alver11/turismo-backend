@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * @method static insert(array[] $data)
@@ -34,6 +35,7 @@ class Category extends Model
 
         static::deleting(function ($category) {
             foreach ($category->images as $image) {
+                Storage::delete($image->file_path);
                 $image->delete();
             }
         });
