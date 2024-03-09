@@ -48,8 +48,15 @@ class AuthController extends Controller
 
     public function user(): JsonResponse
     {
-        return response()->json(auth()->user());
+        $user = auth()->user();
+        if ($user && $user->active) {
+            return response()->json($user);
+        } else {
+            auth()->logout();
+            return response()->json(null, 401);
+        }
     }
+
 
     public function logout(): JsonResponse
     {

@@ -132,7 +132,11 @@ class UserController extends Controller
                 $userOld->email = $data['email'];
             }
             $userOld->phone = $data['phone'];
-            if(isset($data['password'])){
+            $userOld->active = $data['active'];
+            /* if(isset($data['password'])){
+                $userOld->password = Hash::make($data['password']);
+            } */
+            if(isset($data['password']) && strlen($data['password']) > 7 && !Hash::check($data['password'], $userOld->password)) {
                 $userOld->password = Hash::make($data['password']);
             }
             $userOld->save();

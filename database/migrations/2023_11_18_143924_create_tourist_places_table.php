@@ -20,6 +20,7 @@ return new class extends Migration
             $table->double('lng')->nullable();
             $table->double('lat')->nullable();
             $table->foreignId('user_id')->constrained();
+            $table->boolean('status')->default(true);
             $table->timestamps();
         });
     }

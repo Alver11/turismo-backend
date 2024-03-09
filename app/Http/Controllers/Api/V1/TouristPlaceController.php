@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PlaceResource;
+use App\Models\Image;
 use App\Models\TouristPlace;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -12,6 +13,8 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -37,7 +40,6 @@ class TouristPlaceController extends Controller
         $validator = Validator::make($data, [
             'name' => 'required'
         ]);
-
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 400);
         }
@@ -72,6 +74,99 @@ class TouristPlaceController extends Controller
 
         });
         return response()->json(['message' => 'Lugar agregado con éxito'], 201);
+    }
+
+    public function update(Request $request, $id): JsonResponse
+    {
+        $data = json_decode($request->input('data'), true);
+        $validator = Validator::make($data, [
+            'name' => 'required',
+            // Puedes agregar más reglas de validación según sea necesario
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 400);
+        }
+
+        $tourist = TouristPlace::findOrFail($id);
+
+        DB::transaction(function () use ($request, $data, $tourist) {
+            $tourist->update([
+                "name" => $data['name'],
+                "address" => $data['address'],
+                "district_id" => $data['district_id'],
+                "description" => $data['description'],
+                "lat" => $data['lat'],
+                "lng" => $data['lng'],
+                "status" => $data['status'],
+            ]);
+
+            // Actualizar categorías
+            if (isset($data['categories'])) {
+                $tourist->categories()->sync($data['categories']);
+            }
+
+            // Actualizar atributos
+            $tourist->attributes()->detach();
+            if (isset($data['attributes'])) {
+                foreach ($data['attributes'] as $attributeData) {
+                    $tourist->attributes()->attach($attributeData['id'], ['info' => $attributeData['info']]);
+                }
+            }
+
+            // Recopilar los paths de las imágenes que se conservarán
+            $keepImages = collect($request->input('images', []))
+                ->where('path', '<>', '')
+                ->pluck('path')
+                ->all();
+
+            //Log::info('keepImages= ', array($keepImages));
+
+            // Eliminar imágenes que no están en la lista de conservación
+            foreach ($tourist->images as $existingImage) {
+                if (!in_array($existingImage->file_path, $keepImages)) {
+                    Storage::delete($existingImage->file_path);
+                    $existingImage->delete();
+                }
+            }
+
+            // Procesar las nuevas imágenes
+            if ($request->hasFile('images')) {
+                foreach ($request->file('images') as $index => $file) {
+                    $pathInput = $request->input("images.$index.path");
+                    Log::info('image_url', array($pathInput));
+                    if ($pathInput === null || $pathInput != '') {
+                        $path = $file->store('images/tourists');
+                        $tourist->images()->create([
+                            'file_path' => $path,
+                            'front_page' => $request->input("images.$index.profile"),
+                        ]);
+                    }elseif (!empty($pathInput)) {
+                        // Esto maneja la actualización de las imágenes existentes.
+                        $image = Image::where('file_path', $pathInput)->first();
+                        Log::info('image', array($image));
+                        if ($image) {
+                            $image->front_page = $request->input("images.$index.profile");
+                            $image->save();
+                        }
+                    }
+                }
+            }else {
+                for ($index = 0; $index < 10; $index++) {
+                    $pathInput = $request->input("images.$index.path");
+                    if (!empty($pathInput)) {
+                        // Esto maneja la actualización de las imágenes existentes.
+                        $image = Image::where('file_path', $pathInput)->first();
+                        Log::info('image', array($image));
+                        if ($image) {
+                            $image->front_page = $request->input("images.$index.profile");
+                            $image->save();
+                        }
+                    }
+                }
+            }
+        });
+
+        return response()->json(['message' => 'Lugar turístico actualizado con éxito'], 200);
     }
 
     public function show($id): Model|Collection|Builder|array|null

@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Storage;
 /**
  * @method static insert(array[] $data)
  * @method static create(array $array)
+ * @method static findOrFail($id)
  */
 class TouristPlace extends Model
 {
@@ -25,6 +26,7 @@ class TouristPlace extends Model
         'lat',
         'lng',
         'user_id',
+        'status'
     ];
 
     public function district(): BelongsTo

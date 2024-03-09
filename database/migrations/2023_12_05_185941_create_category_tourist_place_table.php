@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('category_tourist_place', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('category_id')->constrained()->onDelete('cascade');
-            $table->foreignId('tourist_place_id')->constrained()->onDelete('cascade');
+            $table->foreignId('category_id')->constrained();
+            $table->foreignId('tourist_place_id')->constrained();
         });
     }
 
