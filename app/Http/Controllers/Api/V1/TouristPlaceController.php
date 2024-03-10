@@ -177,6 +177,17 @@ class TouristPlaceController extends Controller
     public function destroy(TouristPlace $tourist): JsonResponse
     {
         DB::transaction(function () use ($tourist) {
+            // Elimina todas las relaciones antes de eliminar el lugar turístico
+            // Desvincula las categorías
+            $tourist->categories()->detach();
+            // Desvincula los atributos
+            $tourist->attributes()->detach();
+            // Elimina las imágenes asociadas
+            foreach ($tourist->images as $image) {
+                // Aquí podrías también eliminar el archivo físico si es necesario usando Storage::delete($image->file_path);
+                $image->delete(); // Elimina el registro de la imagen
+            }
+            // Finalmente, elimina el lugar turístico
             $tourist->delete();
         });
 

@@ -36,7 +36,7 @@ class PermissionSeeder extends Seeder
         Permission::create(['name' => 'roles create', 'description' => 'Crear Roles y Permisos']);
         Permission::create(['name' => 'roles edit', 'description' => 'Editar Roles y Permisos']);
         Permission::create(['name' => 'roles delete', 'description' => 'Eliminar Roles y Permisos']);
-        Permission::create(['name' => 'program attribute', 'description' => 'Programa - Atributos']);
+        Permission::create(['name' => 'program attributes', 'description' => 'Programa - Atributos']);
         Permission::create(['name' => 'attributes edit', 'description' => 'Editar Atributos']);
         Permission::create(['name' => 'attributes delete', 'description' => 'Eliminar Atributos']);
         Permission::create(['name' => 'program categories', 'description' => 'Programa - Categorias']);
