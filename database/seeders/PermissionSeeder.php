@@ -50,5 +50,8 @@ class PermissionSeeder extends Seeder
         Permission::create(['name' => 'tourists delete', 'description' => 'Eliminar Lugares Turisticos']);
         Permission::create(['name' => 'tourists view', 'description' => 'Ver Lugares Turisticos']);
 
+        Permission::create(['name' => 'program events', 'description' => 'Programa - Eventos-Noticias']);
+        Permission::create(['name' => 'create events', 'description' => 'Crear Eventos-Noticias']);
+        Permission::create(['name' => 'edit events', 'description' => 'Editar Eventos-Noticias']);
     }
 }

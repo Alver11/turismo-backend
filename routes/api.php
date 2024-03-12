@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\V1\AttributeController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\DepartmentController;
+use App\Http\Controllers\Api\V1\EventController;
 use App\Http\Controllers\Api\V1\RoleController;
 use App\Http\Controllers\Api\V1\TouristPlaceController;
 use App\Http\Controllers\Api\V1\UserController;
@@ -25,6 +26,8 @@ use Laravel\Socialite\Facades\Socialite;
 Route::group([
     'prefix' => 'v1'
 ], function () {
+
+    Route::get('chart-panel', [CategoryController::class, 'chartDashboard']);
 
     Route::post('login', [AuthController::class, 'login']);
     Route::get('/sanctum/csrf-cookie', [CsrfCookieController::class, 'show']);
@@ -51,6 +54,7 @@ Route::group([
             'categories' => CategoryController::class,
             'attributes' => AttributeController::class,
             'tourists' => TouristPlaceController::class,
+            'events' => EventController::class,
         ]);
 
         Route::get('get_departments', [DepartmentController::class, 'getDepartments']);

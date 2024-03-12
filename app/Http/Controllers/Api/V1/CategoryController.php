@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CategoryUpdateRequest;
 use App\Models\Category;
+use App\Models\District;
 use App\Models\Image;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
@@ -133,5 +134,57 @@ class CategoryController extends Controller
     public function getCategory(): Collection|array
     {
         return Category::get();
+    }
+
+    //----------------------- Resultados para los graficos----------------------------------
+    public function chartDashboard(): JsonResponse
+    {
+        // Consulta para chartCategories
+        $categoriesWithCount = Category::withCount('touristPlaces')->get();
+        $chartCategoriesData = [];
+        $chartCategoriesNames = [];
+
+        foreach ($categoriesWithCount as $category) {
+            $chartCategoriesData[] = $category->tourist_places_count;
+            $chartCategoriesNames[] = $category->name;
+        }
+
+        // Consulta para chartDistrict
+        $categories = Category::with('touristPlaces')->get();
+        $districts = District::has('touristPlaces')->get();
+
+        $chartDistrictData = [];
+        $districtNames = $districts->pluck('name')->toArray();
+
+        foreach ($categories as $category) {
+            $data = [];
+            foreach ($districts as $district) {
+                $count = $district->touristPlaces->filter(function ($place) use ($category) {
+                    return $place->categories->contains($category);
+                })->count();
+
+                array_push($data, $count);
+            }
+
+            // Añadir solo si la categoría tiene lugares en algún distrito
+            if (array_sum($data) > 0) {
+                $chartDistrictData[] = [
+                    'name' => $category->name,
+                    'data' => $data,
+                ];
+            }
+        }
+
+        // Combinando ambas consultas en una respuesta JSON
+        return response()->json([
+            'chartCategories' => [
+                'data' => $chartCategoriesData,
+                'categories' => $chartCategoriesNames,
+            ],
+            'chartDistrict' => [
+                'district' => $chartDistrictData,
+                'districtNames' => $districtNames,
+            ],
+        ]);
     }
 }
