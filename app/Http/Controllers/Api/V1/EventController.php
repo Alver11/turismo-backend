@@ -3,6 +3,10 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\CategoryResource;
+use App\Http\Resources\EventResource;
+use App\Http\Resources\TouristPlaceResource;
+use App\Models\Category;
 use App\Models\Event;
 use App\Models\Image;
 use App\Models\TouristPlace;
@@ -158,5 +162,44 @@ class EventController extends Controller
             $event->delete();
         });
         return response()->json(['message' => 'Eliminado con éxito']);
+    }
+
+    //-------------------- Funciones para la APP -----------------------
+    public function getEvents(): JsonResponse
+    {
+        $events = Event::with('images','district')
+            ->where('status', true)
+            ->orderBy('id', 'desc')
+            ->get();
+
+        return response()->json(EventResource::collection($events));
+    }
+
+    public function getCategories(): JsonResponse
+    {
+        $events = Category::with(['touristPlaces.district',
+            'touristPlaces.attributes',
+            'touristPlaces' => function ($query) {
+                $query->where('status', true)
+                    ->orderBy('id', 'desc');
+            }])
+            ->orderBy('id', 'desc')
+            ->get();
+
+        return response()->json(CategoryResource::collection($events));
+    }
+
+    public function getTourist(Request $request): JsonResponse
+    {
+        $tourists = TouristPlace::where('status', true);
+        /*if(isset($request->category_di)){
+            $id = $request->category_di;
+            $tourists->with(['categories' => function ($query, $id)
+            {
+                $query->id = $id;
+            }]);
+        }*/
+        $tourists = $tourists->get();
+        return response()->json(TouristPlaceResource::collection($tourists));
     }
 }

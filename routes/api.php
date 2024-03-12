@@ -28,6 +28,9 @@ Route::group([
 ], function () {
 
     Route::get('chart-panel', [CategoryController::class, 'chartDashboard']);
+    Route::get('getEvents', [EventController::class, 'getEvents']);
+    Route::get('getCategories', [EventController::class, 'getCategories']);
+    Route::get('getTourist', [EventController::class, 'getTourist']);
 
     Route::post('login', [AuthController::class, 'login']);
     Route::get('/sanctum/csrf-cookie', [CsrfCookieController::class, 'show']);
