@@ -22,7 +22,8 @@ class EventResource extends JsonResource
             "description" => $this->description,
             "lng" => $this->lng,
             "lat" => $this->lat,
-            "updated_at" => $this->updated_at ? $this->updated_at->diffForHumans() : null,
+            "date" => $this->updated_at ? $this->updated_at->diffForHumans() : null,
+            "updated_at" => $this->updated_at ? $this->updated_at->format('d/m/Y H:i:s') : null,
             "images" => $this->images ? ImageResource::collection($this->images) : [],
         ];
     }
