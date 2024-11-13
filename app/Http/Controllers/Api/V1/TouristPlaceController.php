@@ -50,6 +50,7 @@ class TouristPlaceController extends Controller
                 "address" => $data['address'],
                 "district_id" => $data['district_id'],
                 "description" => $data['description'],
+                "street_view" => $data['street_view'],
                 "lat" => $data['lat'],
                 "lng" => $data['lng'],
                 "user_id" => Auth::id()
@@ -95,6 +96,7 @@ class TouristPlaceController extends Controller
                 "address" => $data['address'],
                 "district_id" => $data['district_id'],
                 "description" => $data['description'],
+                "street_view" => $data['street_view'],
                 "lat" => $data['lat'],
                 "lng" => $data['lng'],
                 "status" => $data['status'],

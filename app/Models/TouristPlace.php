@@ -23,6 +23,7 @@ class TouristPlace extends Model
         'address',
         'district_id',
         'description',
+        'street_view',
         'lat',
         'lng',
         'user_id',
