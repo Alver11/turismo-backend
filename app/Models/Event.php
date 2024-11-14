@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Storage;
 /**
  * @method static create(array $array)
  * @method static findOrFail($id)
+ * @method static where(string $string, true $true)
  */
 class Event extends Model
 {

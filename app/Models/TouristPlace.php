@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Storage;
  * @method static insert(array[] $data)
  * @method static create(array $array)
  * @method static findOrFail($id)
+ * @method static whereHas(string $string)
  */
 class TouristPlace extends Model
 {
