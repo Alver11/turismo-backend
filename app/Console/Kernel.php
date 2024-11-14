@@ -14,7 +14,8 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         // $schedule->command('inspire')->hourly();
-        $schedule->job(new TrainOpenAIModelJob)->weeklyOn(1, '00:00');
+        $schedule->job(new TrainOpenAIModelJob)->everyTwoMinutes();
+        // $schedule->job(new TrainOpenAIModelJob)->weeklyOn(1, '00:00');
     }
 
     /**
