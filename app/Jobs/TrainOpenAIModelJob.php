@@ -32,7 +32,7 @@ class TrainOpenAIModelJob implements ShouldQueue
     public function handle(GenerateDatasetService $datasetService)
     {
         // Obtener los lugares turísticos con categoría asignada y estado activo
-        $touristPlaces = TouristPlace::whereHas('category')
+        $touristPlaces = TouristPlace::whereHas('categories')
             ->where('status', true)
             ->get()
             ->map(function ($place) {
