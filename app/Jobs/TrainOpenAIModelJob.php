@@ -31,43 +31,24 @@ class TrainOpenAIModelJob implements ShouldQueue
      */
     public function handle(GenerateDatasetService $datasetService)
     {
-        // Obtener los lugares turísticos con categoría asignada y estado activo
-        $touristPlaces = TouristPlace::whereHas('categories')
-            ->where('status', true)
-            ->get()
-            ->map(function ($place) {
-                return [
-                    'id' => $place->id,
-                    'name' => $place->name,
-                    'description' => $place->description,
-                    'category' => $place->categories->name,
-                    'location' => [
-                        'latitude' => $place->latitude,
-                        'longitude' => $place->longitude,
-                    ],
-                    'status' => $place->status,
-                ];
-            })->toArray();
+        // Obtener los lugares turísticos con una categoría asignada, distrito relacionado y estado activo
+        $touristPlaces = TouristPlace::with('district', 'categories') // Carga las relaciones necesarias
+        ->whereHas('categories') // Verifica que tengan al menos una categoría asignada
+        ->whereHas('district') // Verifica que tengan un distrito asignado
+        ->where('status', true) // Solo lugares con estado activo
+        ->get()
+            ->toArray();
 
-        // Obtener los eventos
-        $events = Event::where('status', true)
-            ->get()
-            ->map(function ($event) {
-                return [
-                    'id' => $event->id,
-                    'title' => $event->title,
-                    'description' => $event->description,
-                    'date' => $event->date,
-                    'location' => [
-                        'venue' => $event->venue,
-                        'city' => $event->city,
-                    ],
-                    'status' => $event->status,
-                ];
-            })->toArray();
+        // Obtener los eventos con un distrito relacionado y estado activo
+        $events = Event::with('district') // Carga la relación con el distrito
+        ->whereHas('district') // Verifica que el evento tenga un distrito asignado
+        ->where('status', true) // Solo eventos con estado activo
+        ->get()
+            ->toArray();
 
         // Combinar los datos de lugares turísticos y eventos
         $dataset = array_merge($touristPlaces, $events);
+
 
         // Generar el archivo JSONL
         $filePath = $datasetService->generateDataset($dataset);

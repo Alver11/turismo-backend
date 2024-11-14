@@ -24,7 +24,7 @@ class GenerateDatasetService
                 "Estado: " . ($place['status'] ? 'Activo' : 'Inactivo'),
                 "Creado en: {$place['created_at']}",
                 "Actualizado en: {$place['updated_at']}",
-                "Categorías: " . implode(', ', array_map(fn($category) => $category['name'], $place['categories'] ?? [])),
+                "Categorías: " . implode(', ', array_map(fn($categories) => $categories['name'], $place['categories'] ?? [])),
             ];
 
             $fullDetails = implode("\n", $details);
