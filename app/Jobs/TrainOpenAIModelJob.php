@@ -40,7 +40,7 @@ class TrainOpenAIModelJob implements ShouldQueue
                     'id' => $place->id,
                     'name' => $place->name,
                     'description' => $place->description,
-                    'category' => $place->category->name,
+                    'category' => $place->categories->name,
                     'location' => [
                         'latitude' => $place->latitude,
                         'longitude' => $place->longitude,
