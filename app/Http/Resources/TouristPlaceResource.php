@@ -24,6 +24,7 @@ class TouristPlaceResource extends JsonResource
             "attribute" => AttributeResource::collection($this->attributes),
             "lng" => $this->lng,
             "lat" => $this->lat,
+            "streetView" => $this->street_view,
             "images" => $this->images ? ImageResource::collection($this->images) : [],
         ];
     }
