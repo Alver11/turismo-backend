@@ -11,7 +11,7 @@ class OpenAIController extends Controller
     public function askQuestion(Request $request)
     {
         $question = $request->input('question');
-        $systemMessage = "Eres un asistente turístico que responde preguntas sobre lugares en base a los datos proporcionados. Proporciona solo los ID de cada lugar que cumpla con las indicaciones o preguntas del usuario, que coincida con cualquiera de los parametros";
+        $systemMessage = "Eres un asistente turístico que lista los datos unicamente de las informaciones proporcionadas, si no hay los datos solo responde con otra pregunta, en caso que si haya una respuesta proporciona la informacion solo de los datos recibidos en el entrenamiento";
         $response = Http::withHeaders([
             'Authorization' => 'Bearer ' . env('OPENAI_API_KEY'),
         ])->post('https://api.openai.com/v1/chat/completions', [
