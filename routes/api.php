@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\DepartmentController;
 use App\Http\Controllers\Api\V1\EventController;
 use App\Http\Controllers\Api\V1\OpenAIController;
 use App\Http\Controllers\Api\V1\RoleController;
+use App\Http\Controllers\Api\V1\ServiceController;
 use App\Http\Controllers\Api\V1\TouristPlaceController;
 use App\Http\Controllers\Api\V1\TypeServiceController;
 use App\Http\Controllers\Api\V1\UserController;
@@ -35,6 +36,7 @@ Route::group([
     Route::get('getEvents', [EventController::class, 'getEvents']);
     Route::get('getCategories', [EventController::class, 'getCategories']);
     Route::get('getTourist', [EventController::class, 'getTourist']);
+    Route::get('getServices', [ServiceController::class, 'getServices']);
 
     Route::post('login', [AuthController::class, 'login']);
     Route::get('/sanctum/csrf-cookie', [CsrfCookieController::class, 'show']);
@@ -61,6 +63,7 @@ Route::group([
             'categories' => CategoryController::class,
             'attributes' => AttributeController::class,
             'typeServices' => TypeServiceController::class,
+            'services' => ServiceController::class,
             'tourists' => TouristPlaceController::class,
             'events' => EventController::class,
         ]);
