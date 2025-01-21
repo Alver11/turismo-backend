@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\EventController;
 use App\Http\Controllers\Api\V1\OpenAIController;
 use App\Http\Controllers\Api\V1\RoleController;
 use App\Http\Controllers\Api\V1\TouristPlaceController;
+use App\Http\Controllers\Api\V1\TypeServiceController;
 use App\Http\Controllers\Api\V1\UserController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Sanctum\Http\Controllers\CsrfCookieController;
@@ -59,6 +60,7 @@ Route::group([
             'users' => UserController::class,
             'categories' => CategoryController::class,
             'attributes' => AttributeController::class,
+            'typeServices' => TypeServiceController::class,
             'tourists' => TouristPlaceController::class,
             'events' => EventController::class,
         ]);
