@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\V1\AttributeController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\DepartmentController;
+use App\Http\Controllers\Api\V1\EventCategoryController;
 use App\Http\Controllers\Api\V1\EventController;
 use App\Http\Controllers\Api\V1\OpenAIController;
 use App\Http\Controllers\Api\V1\RoleController;
@@ -66,6 +67,7 @@ Route::group([
             'services' => ServiceController::class,
             'tourists' => TouristPlaceController::class,
             'events' => EventController::class,
+            'event-categories' => EventCategoryController::class,
         ]);
 
         Route::get('get_departments', [DepartmentController::class, 'getDepartments']);

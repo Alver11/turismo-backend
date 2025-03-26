@@ -26,8 +26,15 @@ class Event extends Model
         'lat',
         'lng',
         'user_id',
-        'status'
+        'status',
+        'event_date',
+        'publication_end_date',
     ];
+
+    public function categories(): BelongsToMany
+    {
+        return $this->belongsToMany(EventCategory::class, 'event_event_category');
+    }
 
     public function district(): BelongsTo
     {
