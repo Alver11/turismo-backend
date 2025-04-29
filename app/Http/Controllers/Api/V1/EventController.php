@@ -9,7 +9,6 @@ use App\Http\Resources\ImageResource;
 use App\Http\Resources\TouristPlaceResource;
 use App\Models\Category;
 use App\Models\Event;
-use App\Models\Image;
 use App\Models\TouristPlace;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -211,22 +210,14 @@ class EventController extends Controller
                 $query->select('event_id', 'name');
             },
             'images' => function ($query) {
-                $query->select('id', 'imageable_id', 'file_path', 'front_page'); // Selecciona los campos necesarios
+                $query->select('id', 'imageable_id', 'file_path', 'front_page');
             },
             'district' => function ($query) {
-                $query->select('id', 'name'); // Selecciona los campos necesarios
+                $query->select('id', 'name');
             }
         ])->get();
 
-        // Modificar la respuesta para que las relaciones vacías sean null
-        $events->transform(function ($event) {
-            $event->categories = $event->categories->isEmpty() ? null : $event->categories;
-            $event->images = $event->images->isEmpty() ? null : ImageResource::collection($event->images);
-            $event->district = $event->district ?: null; // `district` no es una colección, es un objeto o null
-            return $event;
-        });
-
-        return response()->json($events, 200);
+        return response()->json(EventResource::collection($events), 200);
     }
 
     public function getCategories(): JsonResponse

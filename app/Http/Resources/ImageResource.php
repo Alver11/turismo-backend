@@ -17,7 +17,6 @@ class ImageResource extends JsonResource
         return [
           "id" => $this->id,
           "filePath" => env('APP_URL', 'http://localhost'). '/storage/' . $this->file_path,
-            //"filePath" => "http://apiturismo.walabi.com.py/storage/images/tourists/b3GKI3WVPzsiQB6PVIkdvZ5AKNilcJgcDIpMqIrn.jpg",
           "frontPage" => $this->front_page,
         ];
     }
