@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\CategoryResource;
 use App\Http\Resources\EventResource;
+use App\Http\Resources\ImageResource;
 use App\Http\Resources\TouristPlaceResource;
 use App\Models\Category;
 use App\Models\Event;
@@ -220,7 +221,7 @@ class EventController extends Controller
         // Modificar la respuesta para que las relaciones vacías sean null
         $events->transform(function ($event) {
             $event->categories = $event->categories->isEmpty() ? null : $event->categories;
-            $event->images = $event->images->isEmpty() ? null : $event->images;
+            $event->images = $event->images->isEmpty() ? null : ImageResource::collection($event->images);
             $event->district = $event->district ?: null; // `district` no es una colección, es un objeto o null
             return $event;
         });
