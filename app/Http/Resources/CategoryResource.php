@@ -15,10 +15,12 @@ class CategoryResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            "id" => $this->id,
-            "name" => $this->name,
-            "touristPlaces" => TouristPlaceResource::collection($this->touristPlaces),
-            "image" => $this->images ? env('APP_URL', 'http://192.168.100.184'). '/storage/' . $this->images[0]->file_path : '',
+            'id' => $this->id,
+            'name' => $this->name,
+            'touristPlaces' => TouristPlaceResource::collection($this->touristPlaces),
+            'image' => $this->images->isNotEmpty()
+                ? config('app.url').'/storage/'.$this->images->first()->file_path
+                : '',
         ];
     }
 }

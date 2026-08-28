@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
-use Illuminate\Support\Facades\Storage;
 
 /**
  * @method static create(array $array)
@@ -52,7 +51,6 @@ class Event extends Model
 
         static::deleting(function ($event) {
             foreach ($event->images as $image) {
-                Storage::delete($image->file_path);
                 $image->delete();
             }
         });

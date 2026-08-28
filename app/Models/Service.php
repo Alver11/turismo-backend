@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
-use Illuminate\Support\Facades\Storage;
 
 /**
  * @method static create(array $array)
@@ -27,7 +26,7 @@ class Service extends Model
         'lat',
         'lng',
         'user_id',
-        'status'
+        'status',
     ];
 
     public function district(): BelongsTo
@@ -51,7 +50,6 @@ class Service extends Model
 
         static::deleting(function ($service) {
             foreach ($service->images as $image) {
-                Storage::delete($image->file_path);
                 $image->delete();
             }
         });

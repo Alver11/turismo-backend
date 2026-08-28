@@ -34,7 +34,19 @@ return [
     'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
-        'redirect' => 'http://example.com/callback-url',
+        'redirect' => env('GOOGLE_REDIRECT_URI'),
+    ],
+
+    'openai' => [
+        'api_key' => env('OPENAI_API_KEY'),
+        'chat_model' => env('OPENAI_CHAT_MODEL'),
+        'fine_tuning_model' => env('OPENAI_FINE_TUNING_MODEL', 'gpt-4o-mini-2024-07-18'),
+        'base_url' => env('OPENAI_BASE_URL', 'https://api.openai.com/v1'),
+    ],
+
+    'bootstrap' => [
+        'super_admin_email' => env('SUPER_ADMIN_EMAIL', 'superadmin@admin.com'),
+        'super_admin_password' => env('SUPER_ADMIN_PASSWORD'),
     ],
 
 ];

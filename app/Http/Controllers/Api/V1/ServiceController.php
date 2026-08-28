@@ -13,7 +13,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -22,9 +21,10 @@ class ServiceController extends Controller
     public function index(): JsonResponse
     {
         $queryEvent = Service::query();
-        $queryEvent->with(['district','type_service', 'images' => function ($query) {
+        $queryEvent->with(['district', 'type_service', 'images' => function ($query) {
             $query->where('front_page', true);
         }]);
+
         return DataTables::eloquent($queryEvent)->toJson();
     }
 
@@ -41,22 +41,21 @@ class ServiceController extends Controller
 
         DB::transaction(function () use ($request, $data) {
             $event = Service::create([
-                "type_data" => $data['type_data'],
-                "name" => $data['name'],
-                "phone" => $data['phone'],
-                "type_service_id" => $data['type_service_id'] ?? null,
-                "address" => $data['address'] ?? null,
-                "district_id" => $data['district_id'] ?? null,
-                "description" => $data['description'],
-                "lat" => $data['lat'],
-                "lng" => $data['lng'],
-                "user_id" => Auth::id()
+                'type_data' => $data['type_data'],
+                'name' => $data['name'],
+                'phone' => $data['phone'],
+                'type_service_id' => $data['type_service_id'] ?? null,
+                'address' => $data['address'] ?? null,
+                'district_id' => $data['district_id'] ?? null,
+                'description' => $data['description'],
+                'lat' => $data['lat'],
+                'lng' => $data['lng'],
+                'user_id' => Auth::id(),
             ]);
-
 
             if ($request->hasFile('images')) {
                 foreach ($request->file('images') as $index => $file) {
-                    $path = $file->store('images/services');
+                    $path = $file->store('images/services', 'public');
                     $event->images()->create([
                         'file_path' => $path,
                         'front_page' => $request->input("images.$index.profile"),
@@ -65,6 +64,7 @@ class ServiceController extends Controller
             }
 
         });
+
         return response()->json(['message' => 'Datos gregado con éxito'], 201);
     }
 
@@ -73,7 +73,7 @@ class ServiceController extends Controller
         $data = json_decode($request->input('data'), true);
         $validator = Validator::make($data, [
             'name' => 'required',
-            'phone' => 'required'
+            'phone' => 'required',
         ]);
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 400);
@@ -83,16 +83,16 @@ class ServiceController extends Controller
 
         DB::transaction(function () use ($request, $data, $event) {
             $event->update([
-                "name" => $data['name'],
-                "type_data" => $data['type_data'],
-                "phone" => $data['phone'],
-                "type_service_id" => $data['type_service_id'] ?? null,
-                "address" => $data['address'] ?? null,
-                "district_id" => $data['district_id'] ?? null,
-                "description" => $data['description'],
-                "lat" => $data['lat'],
-                "lng" => $data['lng'],
-                "status" => $data['status'],
+                'name' => $data['name'],
+                'type_data' => $data['type_data'],
+                'phone' => $data['phone'],
+                'type_service_id' => $data['type_service_id'] ?? null,
+                'address' => $data['address'] ?? null,
+                'district_id' => $data['district_id'] ?? null,
+                'description' => $data['description'],
+                'lat' => $data['lat'],
+                'lng' => $data['lng'],
+                'status' => $data['status'],
             ]);
 
             // Recopilar los paths de las imágenes que se conservarán
@@ -103,8 +103,7 @@ class ServiceController extends Controller
 
             // Eliminar imágenes que no están en la lista de conservación
             foreach ($event->images as $existingImage) {
-                if (!in_array($existingImage->file_path, $keepImages)) {
-                    Storage::delete($existingImage->file_path);
+                if (! in_array($existingImage->file_path, $keepImages)) {
                     $existingImage->delete();
                 }
             }
@@ -113,29 +112,29 @@ class ServiceController extends Controller
             if ($request->hasFile('images')) {
                 foreach ($request->file('images') as $index => $file) {
                     $pathInput = $request->input("images.$index.path");
-                    Log::info('image_url', array($pathInput));
+                    Log::info('image_url', [$pathInput]);
                     if ($pathInput === null || $pathInput != '') {
-                        $path = $file->store('images/services');
+                        $path = $file->store('images/services', 'public');
                         $event->images()->create([
                             'file_path' => $path,
                             'front_page' => $request->input("images.$index.profile"),
                         ]);
-                    }elseif (!empty($pathInput)) {
+                    } elseif (! empty($pathInput)) {
                         $image = Image::where('file_path', $pathInput)->first();
-                        Log::info('image', array($image));
+                        Log::info('image', [$image]);
                         if ($image) {
                             $image->front_page = $request->input("images.$index.profile");
                             $image->save();
                         }
                     }
                 }
-            }else {
+            } else {
                 for ($index = 0; $index < 10; $index++) {
                     $pathInput = $request->input("images.$index.path");
-                    if (!empty($pathInput)) {
+                    if (! empty($pathInput)) {
                         // Esto maneja la actualización de las imágenes existentes.
                         $image = Image::where('file_path', $pathInput)->first();
-                        Log::info('image', array($image));
+                        Log::info('image', [$image]);
                         if ($image) {
                             $image->front_page = $request->input("images.$index.profile");
                             $image->save();
@@ -150,7 +149,7 @@ class ServiceController extends Controller
 
     public function show($id): Model|Collection|Builder|array|null
     {
-        return Service::with(['district','type_service','images'])->findOrFail($id);
+        return Service::with(['district', 'type_service', 'images'])->findOrFail($id);
     }
 
     public function destroy(Service $service): JsonResponse
@@ -161,11 +160,12 @@ class ServiceController extends Controller
             }
             $service->delete();
         });
+
         return response()->json(['message' => 'Eliminado con éxito']);
     }
 
     public function getServices(): Collection|array
     {
-        return Service::with(['district','type_service','images'])->orderBy('name')->get();
+        return Service::with(['district', 'type_service', 'images'])->orderBy('name')->get();
     }
 }

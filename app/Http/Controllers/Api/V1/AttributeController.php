@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Spatie\Permission\Models\Role;
+use Illuminate\Validation\Rule;
 use Yajra\DataTables\Facades\DataTables;
 
 class AttributeController extends Controller
@@ -16,8 +16,10 @@ class AttributeController extends Controller
     public function index(): JsonResponse
     {
         $query = Attribute::query();
+
         return DataTables::of($query)->toJson();
     }
+
     public function getAttribute(): Collection|array
     {
         return Attribute::get();
@@ -26,9 +28,10 @@ class AttributeController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validatedData = $request->validate([
-            'name' => 'required|unique:roles|max:255',
+            'name' => ['required', 'string', 'max:255', Rule::unique('attributes', 'name')],
         ]);
-        Attribute::create(['name' => $validatedData['name'], 'type_input' =>'text']);
+        Attribute::create(['name' => $validatedData['name'], 'type_input' => 'text']);
+
         return response()->json(['message' => 'Atriburo creado exitosamente']);
     }
 
@@ -40,12 +43,8 @@ class AttributeController extends Controller
     public function update(Request $request, $id): JsonResponse
     {
         $attribute = Attribute::findOrFail($id);
-        if (!$attribute) {
-            return response()->json(['message' => 'Atributo no encontrado'], 404);
-        }
-
         $validatedData = $request->validate([
-            'name' => 'required|unique:roles,name,' . $id . '|max:255',
+            'name' => ['required', 'string', 'max:255', Rule::unique('attributes', 'name')->ignore($attribute->id)],
         ]);
         $attribute->name = $validatedData['name'];
         $attribute->save();
@@ -58,6 +57,7 @@ class AttributeController extends Controller
         try {
             $attribute = Attribute::findOrFail($id);
             $attribute->delete();
+
             return response()->json(['message' => 'Eliminado con éxito']);
         } catch (QueryException $e) {
             return response()->json(['message' => 'Error al Eliminar el Atributo']);

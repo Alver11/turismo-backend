@@ -23,7 +23,7 @@ class Image extends Model
         parent::boot();
 
         static::deleting(function ($image) {
-            Storage::delete($image->file_path);
+            Storage::disk('public')->delete($image->file_path);
         });
     }
 }

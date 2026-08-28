@@ -14,10 +14,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Yajra\DataTables\Facades\DataTables;
 
 class CategoryController extends Controller
@@ -27,8 +26,9 @@ class CategoryController extends Controller
      */
     public function index(): JsonResponse
     {
-        $category =  Category::query();
+        $category = Category::query();
         $query = $category->with('images');
+
         return DataTables::of($query)->toJson();
     }
 
@@ -47,18 +47,18 @@ class CategoryController extends Controller
         }
 
         // Guardar la categoría
-        $category = new Category();
+        $category = new Category;
         $category->name = $data['name'];
         $category->save();
 
         // Manejar la imagen si se ha enviado
         if ($request->hasFile('image') && $request->file('image') !== 'null') {
             $imageFile = $request->file('image');
-            $randomName = Str::uuid() . '.' . $imageFile->getClientOriginalExtension();
-            $imagePath = $request->file('image')->store('images/categories');
+            $randomName = Str::uuid().'.'.$imageFile->getClientOriginalExtension();
+            $imagePath = $request->file('image')->store('images/categories', 'public');
             $image = new Image([
                 'name' => $randomName,
-                'file_path' => $imagePath
+                'file_path' => $imagePath,
             ]);
             $category->images()->save($image);
         }
@@ -70,6 +70,7 @@ class CategoryController extends Controller
     {
         return Category::with('images')->findOrFail($id);
     }
+
     public function update(CategoryUpdateRequest $request, $id): JsonResponse
     {
         try {
@@ -79,34 +80,31 @@ class CategoryController extends Controller
             $category->save();
             $existingImage = $category->images()->first();
 
-            if($existingImage){
-                if($existingImage->name != $data['imageName']) {
+            if ($existingImage) {
+                if ($existingImage->name != $data['imageName']) {
                     // Manejar la actualización o eliminación de la imagen
                     if ($request->hasFile('image') && $request->file('image') !== 'null') {
                         // Eliminar la imagen anterior si existe
                         $existingImage = $category->images()->first();
                         if ($existingImage) {
-                            Storage::delete($existingImage->file_path);
                             $existingImage->delete();
                         }
                         // Guardar la nueva imagen y asociarla con la categoría
-                        $imagePath = $request->file('image')->store('images/categories' );
+                        $imagePath = $request->file('image')->store('images/categories', 'public');
                         $image = new Image(['file_path' => $imagePath]);
                         $category->images()->save($image);
-                    }
-                    elseif ($request->input('image') === 'null') {
+                    } elseif ($request->input('image') === 'null') {
                         // Si se proporciona 'null', eliminar la imagen asociada
                         $existingImage = $category->images()->first();
                         if ($existingImage) {
-                            Storage::delete($existingImage->file_path);
                             $existingImage->delete();
                         }
                     }
                 }
-            }else{
+            } else {
                 if ($request->hasFile('image') && $request->file('image') !== 'null') {
                     // Guardar la nueva imagen y asociarla con la categoría
-                    $imagePath = $request->file('image')->store('images/categories' );
+                    $imagePath = $request->file('image')->store('images/categories', 'public');
                     $image = new Image(['file_path' => $imagePath]);
                     $category->images()->save($image);
                 }
@@ -115,7 +113,7 @@ class CategoryController extends Controller
             return response()->json(['message' => 'Categoría actualizada con éxito', 'category' => $category], 200);
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Categoría no encontrada'], 404);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json(['message' => 'Ocurrió un error al actualizar la categoría'], 500);
         }
     }
@@ -125,6 +123,7 @@ class CategoryController extends Controller
         try {
             $producer = Category::findOrFail($id);
             $producer->delete();
+
             return response()->json(['message' => 'Eliminado con éxito']);
         } catch (QueryException $e) {
             return response()->json(['message' => 'Error al Eliminar la Categoria']);
@@ -136,7 +135,7 @@ class CategoryController extends Controller
         return Category::get();
     }
 
-    //----------------------- Resultados para los graficos----------------------------------
+    // ----------------------- Resultados para los graficos----------------------------------
     public function chartDashboard(): JsonResponse
     {
         // Consulta para chartCategories

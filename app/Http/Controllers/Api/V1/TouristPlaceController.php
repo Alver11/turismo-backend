@@ -9,12 +9,11 @@ use App\Models\TouristPlace;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -27,10 +26,11 @@ class TouristPlaceController extends Controller
 
     public function index(): JsonResponse
     {
-        $queryTourist =  TouristPlace::query();
-        $queryTourist->with(['district','categories', 'attributes', 'images' => function ($query) {
+        $queryTourist = TouristPlace::query();
+        $queryTourist->with(['district', 'categories', 'attributes', 'images' => function ($query) {
             $query->where('front_page', true);
         }]);
+
         return DataTables::eloquent($queryTourist)->toJson();
     }
 
@@ -38,7 +38,7 @@ class TouristPlaceController extends Controller
     {
         $data = json_decode($request->input('data'), true);
         $validator = Validator::make($data, [
-            'name' => 'required'
+            'name' => 'required',
         ]);
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 400);
@@ -46,14 +46,14 @@ class TouristPlaceController extends Controller
 
         DB::transaction(function () use ($request, $data) {
             $tourist = TouristPlace::create([
-                "name" => $data['name'],
-                "address" => $data['address'],
-                "district_id" => $data['district_id'],
-                "description" => $data['description'],
-                "street_view" => $data['street_view'],
-                "lat" => $data['lat'],
-                "lng" => $data['lng'],
-                "user_id" => Auth::id()
+                'name' => $data['name'],
+                'address' => $data['address'],
+                'district_id' => $data['district_id'],
+                'description' => $data['description'],
+                'street_view' => $data['street_view'],
+                'lat' => $data['lat'],
+                'lng' => $data['lng'],
+                'user_id' => Auth::id(),
             ]);
 
             $tourist->categories()->sync($data['categories']);
@@ -62,10 +62,9 @@ class TouristPlaceController extends Controller
                 $tourist->attributes()->attach($attributeData['id'], ['info' => $attributeData['info']]);
             }
 
-
             if ($request->hasFile('images')) {
                 foreach ($request->file('images') as $index => $file) {
-                    $path = $file->store('images/tourists');
+                    $path = $file->store('images/tourists', 'public');
                     $tourist->images()->create([
                         'file_path' => $path,
                         'front_page' => $request->input("images.$index.profile"),
@@ -74,6 +73,7 @@ class TouristPlaceController extends Controller
             }
 
         });
+
         return response()->json(['message' => 'Lugar agregado con éxito'], 201);
     }
 
@@ -92,14 +92,14 @@ class TouristPlaceController extends Controller
 
         DB::transaction(function () use ($request, $data, $tourist) {
             $tourist->update([
-                "name" => $data['name'],
-                "address" => $data['address'],
-                "district_id" => $data['district_id'],
-                "description" => $data['description'],
-                "street_view" => $data['street_view'],
-                "lat" => $data['lat'],
-                "lng" => $data['lng'],
-                "status" => $data['status'],
+                'name' => $data['name'],
+                'address' => $data['address'],
+                'district_id' => $data['district_id'],
+                'description' => $data['description'],
+                'street_view' => $data['street_view'],
+                'lat' => $data['lat'],
+                'lng' => $data['lng'],
+                'status' => $data['status'],
             ]);
 
             // Actualizar categorías
@@ -121,12 +121,11 @@ class TouristPlaceController extends Controller
                 ->pluck('path')
                 ->all();
 
-            //Log::info('keepImages= ', array($keepImages));
+            // Log::info('keepImages= ', array($keepImages));
 
             // Eliminar imágenes que no están en la lista de conservación
             foreach ($tourist->images as $existingImage) {
-                if (!in_array($existingImage->file_path, $keepImages)) {
-                    Storage::delete($existingImage->file_path);
+                if (! in_array($existingImage->file_path, $keepImages)) {
                     $existingImage->delete();
                 }
             }
@@ -135,30 +134,30 @@ class TouristPlaceController extends Controller
             if ($request->hasFile('images')) {
                 foreach ($request->file('images') as $index => $file) {
                     $pathInput = $request->input("images.$index.path");
-                    Log::info('image_url', array($pathInput));
+                    Log::info('image_url', [$pathInput]);
                     if ($pathInput === null || $pathInput != '') {
-                        $path = $file->store('images/tourists');
+                        $path = $file->store('images/tourists', 'public');
                         $tourist->images()->create([
                             'file_path' => $path,
                             'front_page' => $request->input("images.$index.profile"),
                         ]);
-                    }elseif (!empty($pathInput)) {
+                    } elseif (! empty($pathInput)) {
                         // Esto maneja la actualización de las imágenes existentes.
                         $image = Image::where('file_path', $pathInput)->first();
-                        Log::info('image', array($image));
+                        Log::info('image', [$image]);
                         if ($image) {
                             $image->front_page = $request->input("images.$index.profile");
                             $image->save();
                         }
                     }
                 }
-            }else {
+            } else {
                 for ($index = 0; $index < 10; $index++) {
                     $pathInput = $request->input("images.$index.path");
-                    if (!empty($pathInput)) {
+                    if (! empty($pathInput)) {
                         // Esto maneja la actualización de las imágenes existentes.
                         $image = Image::where('file_path', $pathInput)->first();
-                        Log::info('image', array($image));
+                        Log::info('image', [$image]);
                         if ($image) {
                             $image->front_page = $request->input("images.$index.profile");
                             $image->save();
@@ -173,7 +172,7 @@ class TouristPlaceController extends Controller
 
     public function show($id): Model|Collection|Builder|array|null
     {
-        return TouristPlace::with(['district','categories', 'attributes', 'images'])->findOrFail($id);
+        return TouristPlace::with(['district', 'categories', 'attributes', 'images'])->findOrFail($id);
     }
 
     public function destroy(TouristPlace $tourist): JsonResponse

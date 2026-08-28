@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
-use Illuminate\Support\Facades\Storage;
 
 /**
  * @method static insert(array[] $data)
@@ -28,7 +27,7 @@ class TouristPlace extends Model
         'lat',
         'lng',
         'user_id',
-        'status'
+        'status',
     ];
 
     public function district(): BelongsTo
@@ -58,7 +57,6 @@ class TouristPlace extends Model
 
         static::deleting(function ($touristPlace) {
             foreach ($touristPlace->images as $image) {
-                Storage::delete($image->file_path);
                 $image->delete();
             }
         });

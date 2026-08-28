@@ -3,25 +3,18 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\CategoryUpdateRequest;
-use App\Models\Category;
-use App\Models\Image;
 use App\Models\User;
 use Exception;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Spatie\Permission\Models\Role;
 use Yajra\DataTables\Facades\DataTables;
-use function PHPUnit\Framework\isEmpty;
 
 class UserController extends Controller
 {
@@ -30,7 +23,7 @@ class UserController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $queryUser =  User::query();
+        $queryUser = User::query();
         $queryUser->whereHas('roles', function ($query) {
             $query->where('guard_name', 'web');
         });
@@ -58,24 +51,24 @@ class UserController extends Controller
         $data = json_decode($request->input('data'), true);
         $validator = Validator::make($data, [
             'name' => 'required',
-            'email' => 'required|string|email|max:50|unique:users'
+            'email' => 'required|string|email|max:50|unique:users',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 400);
         }
 
-        DB::transaction(function () use ($request, $data,) {
-            $imagePath = "";
+        DB::transaction(function () use ($request, $data) {
+            $imagePath = '';
             if ($request->hasFile('image') && $request->file('image') !== 'null') {
-                $imagePath = $request->file('image')->store('images/profile');
+                $imagePath = $request->file('image')->store('images/profile', 'public');
             }
             $user = User::create([
-                "profile_path" => $imagePath,
-                "name" => $data['name'],
-                "email" => $data['email'],
-                "phone" => $data['phone'],
-                "password" => Hash::make($data['password']),
+                'profile_path' => $imagePath,
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'phone' => $data['phone'],
+                'password' => Hash::make($data['password']),
             ]);
 
             $roles = Role::whereIn('id', $data['roles'])->get();
@@ -84,6 +77,7 @@ class UserController extends Controller
                 $user->assignRole($role);
             }
         });
+
         return response()->json(['message' => 'Usuario creado con éxito'], 201);
     }
 
@@ -112,23 +106,25 @@ class UserController extends Controller
         }
 
         DB::transaction(function () use ($request, $data, $userOld) {
-            $imagePath = $data['profile_path'];
-            if($imagePath != $userOld->profile_path){
-                if($imagePath == '' || $imagePath == null || !isEmpty($userOld->profile_path)){
-                    Storage::delete($userOld->profile_path);
-                }else{
-                    if($userOld->profile_path){
-                        Storage::delete($userOld->profile_path);
-                    }
-                    if ($request->hasFile('image') && $request->file('image') !== 'null') {
-                        $imagePath = $request->file('image')->store('images/profile');
-                    }
+            $imagePath = $userOld->profile_path;
+
+            if ($request->hasFile('image')) {
+                if ($imagePath) {
+                    Storage::disk('public')->delete($imagePath);
                 }
+
+                $imagePath = $request->file('image')->store('images/profile', 'public');
+            } elseif (array_key_exists('profile_path', $data) && empty($data['profile_path'])) {
+                if ($imagePath) {
+                    Storage::disk('public')->delete($imagePath);
+                }
+
+                $imagePath = null;
             }
 
             $userOld->profile_path = $imagePath;
             $userOld->name = $data['name'];
-            if($data['email'] != $userOld->email){
+            if ($data['email'] != $userOld->email) {
                 $userOld->email = $data['email'];
             }
             $userOld->phone = $data['phone'];
@@ -136,7 +132,7 @@ class UserController extends Controller
             /* if(isset($data['password'])){
                 $userOld->password = Hash::make($data['password']);
             } */
-            if(isset($data['password']) && strlen($data['password']) > 7 && !Hash::check($data['password'], $userOld->password)) {
+            if (isset($data['password']) && strlen($data['password']) > 7 && ! Hash::check($data['password'], $userOld->password)) {
                 $userOld->password = Hash::make($data['password']);
             }
             $userOld->save();
@@ -150,12 +146,13 @@ class UserController extends Controller
                 $userOld->roles()->sync($roles);
             }
         });
+
         return response()->json(['message' => 'Usuario actualizado con éxito'], 201);
     }
 
     public function destroy(User $user): JsonResponse
     {
-        if (!$user) {
+        if (! $user) {
             return response()->json(['error' => 'Usuario no encontrado'], 404);
         }
 
@@ -163,20 +160,18 @@ class UserController extends Controller
             return response()->json(['error' => 'No se puede eliminar el superadministrador'], 403);
         }
 
-        if ($user->id == Auth::id() ) {
+        if ($user->id == Auth::id()) {
             return response()->json(['error' => 'No puedes eliminar tu propio usuario'], 403);
         }
 
         DB::transaction(function () use ($user) {
             $user->roles()->detach();
-            if($user->profile_path != null || $user->profile_path != ''){
-                Storage::delete($user->profile_path);
+            if ($user->profile_path != null || $user->profile_path != '') {
+                Storage::disk('public')->delete($user->profile_path);
             }
             $user->delete();
         });
 
         return response()->json(['message' => 'Usuario eliminado con éxito'], 200);
     }
-
-
 }

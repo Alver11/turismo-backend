@@ -3,8 +3,8 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use Carbon\Carbon;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -15,43 +15,62 @@ class PermissionSeeder extends Seeder
      */
     public function run(): void
     {
-        $superAdminRole = Role::create(['name' => 'Super-Admin']);
-        //Cambiar luego a samtunc 'guard_name' => 'sanctum'
-        $superAdmin = User::factory()->create([
-            'name' => 'superadmin',
-            'email' => 'superadmin@admin.com',
-            'password' => bcrypt("12345678"),
-            'active' => true,
-            'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
-            'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
-        ]);
+        $superAdminPassword = config('services.bootstrap.super_admin_password');
+
+        if (! $superAdminPassword) {
+            throw new \LogicException('Configure SUPER_ADMIN_PASSWORD antes de ejecutar PermissionSeeder.');
+        }
+
+        $permissions = [
+            'program users' => 'Programa - Usuario',
+            'users create' => 'Crear Usuario',
+            'module setting' => 'Módulo de Configuración',
+            'users edit' => 'Editar Usuario',
+            'users delete' => 'Eliminar Usuario',
+            'program roles' => 'Programa - Roles y Permisos',
+            'roles create' => 'Crear Roles y Permisos',
+            'roles edit' => 'Editar Roles y Permisos',
+            'roles delete' => 'Eliminar Roles y Permisos',
+            'program attributes' => 'Programa - Atributos',
+            'attributes create' => 'Crear Atributos',
+            'attributes edit' => 'Editar Atributos',
+            'attributes delete' => 'Eliminar Atributos',
+            'program categories' => 'Programa - Categorías',
+            'categories create' => 'Crear Categorías',
+            'categories edit' => 'Editar Categorías',
+            'categories delete' => 'Eliminar Categorías',
+            'program tourists' => 'Programa - Lugares Turísticos',
+            'tourists create' => 'Agregar Lugares Turísticos',
+            'tourists edit' => 'Editar Lugares Turísticos',
+            'tourists delete' => 'Eliminar Lugares Turísticos',
+            'tourists view' => 'Ver Lugares Turísticos',
+            'program events' => 'Programa - Eventos-Noticias',
+            'create events' => 'Crear Eventos-Noticias',
+            'edit events' => 'Editar Eventos-Noticias',
+            'delete events' => 'Eliminar Eventos-Noticias',
+            'event categories manage' => 'Administrar Categorías de Eventos',
+            'program services' => 'Programa - Servicios',
+            'services manage' => 'Administrar Servicios',
+            'ai ask' => 'Consultar asistente turístico',
+        ];
+
+        foreach ($permissions as $name => $description) {
+            Permission::updateOrCreate(
+                ['name' => $name, 'guard_name' => 'web'],
+                ['description' => $description],
+            );
+        }
+
+        $superAdminRole = Role::firstOrCreate(['name' => 'Super-Admin', 'guard_name' => 'web']);
+        $superAdmin = User::firstOrCreate(
+            ['email' => config('services.bootstrap.super_admin_email')],
+            [
+                'name' => 'superadmin',
+                'password' => Hash::make($superAdminPassword),
+                'active' => true,
+            ],
+        );
+
         $superAdmin->assignRole($superAdminRole);
-
-        Permission::create(['name' => 'program users', 'description' => 'Programa - Usuario']);
-        Permission::create(['name' => 'users create', 'description' => 'Crear Usuario']);
-        Permission::create(['name' => 'module setting', 'description' => 'Modulo de Configuración']);
-        Permission::create(['name' => 'users edit', 'description' => 'Editar Usuario']);
-        Permission::create(['name' => 'users delete', 'description' => 'Eliminar Usuario']);
-        Permission::create(['name' => 'program roles', 'description' => 'Programa - Roles y Permisos']);
-        Permission::create(['name' => 'roles create', 'description' => 'Crear Roles y Permisos']);
-        Permission::create(['name' => 'roles edit', 'description' => 'Editar Roles y Permisos']);
-        Permission::create(['name' => 'roles delete', 'description' => 'Eliminar Roles y Permisos']);
-        Permission::create(['name' => 'program attributes', 'description' => 'Programa - Atributos']);
-        Permission::create(['name' => 'attributes edit', 'description' => 'Editar Atributos']);
-        Permission::create(['name' => 'attributes delete', 'description' => 'Eliminar Atributos']);
-        Permission::create(['name' => 'program categories', 'description' => 'Programa - Categorias']);
-        Permission::create(['name' => 'categories create', 'description' => 'Crear Categorias']);
-        Permission::create(['name' => 'categories edit', 'description' => 'Editar Categorias']);
-        Permission::create(['name' => 'categories delete', 'description' => 'Eliminar Categorias']);
-        Permission::create(['name' => 'program tourists', 'description' => 'Programa - Lugares Turisticos']);
-        Permission::create(['name' => 'tourists create', 'description' => 'Agregar Lugares Turisticos']);
-        Permission::create(['name' => 'attributes create', 'description' => 'Crear Atributos']);
-        Permission::create(['name' => 'tourists edit', 'description' => 'Editar Lugares Turisticos']);
-        Permission::create(['name' => 'tourists delete', 'description' => 'Eliminar Lugares Turisticos']);
-        Permission::create(['name' => 'tourists view', 'description' => 'Ver Lugares Turisticos']);
-
-        Permission::create(['name' => 'program events', 'description' => 'Programa - Eventos-Noticias']);
-        Permission::create(['name' => 'create events', 'description' => 'Crear Eventos-Noticias']);
-        Permission::create(['name' => 'edit events', 'description' => 'Editar Eventos-Noticias']);
     }
 }
